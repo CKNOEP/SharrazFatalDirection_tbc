@@ -75,10 +75,13 @@ function md_Initialize()
 	
 	if not playerModel then
 		local t = { Minimap:GetChildren() }
+		print("t",t)
 		for i = #t, 1, -1 do
 			local v = t[i]
+			print (v:GetObjectType(), v:GetName(),v:GetObjectType())
 			if v:GetObjectType() == "Model" and not v:GetName() then
 				playerModel = v
+				print (playerModel:GetName())
 				break
 			end
 		end
@@ -231,12 +234,12 @@ function md_Main()
 		
 		MD_ADDON_DIR = "Interface\\AddOns\\SharrazFatalDirection_tbc\\icons\\";
 		
-		if (icon == 6) then
+		if (icon == 3) then--2 -> Purple Diamond
 			DirectionMultiplier = 2; --Evertime North .. need to go Shahraz Room again to do this better
 			textOrientation = LOCALE_textOrientationNorthSouth;
 			textOrientationDecription = LOCALE_textOrientationDescriptionNorthSouth;
-			textureIconLeft = "Square";
-			textureIconRight = "Square";
+			textureIconLeft = "Diamond";
+			textureIconRight = "Diamond";
 			textureArrowLeft = "arrow_left.blp";
 			textureArrowMiddle = "arrow_stop.blp";
 			textureArrowRight = "arrow_right.blp";
@@ -245,12 +248,12 @@ function md_Main()
 			MotherDirectionTextCompassSouth:SetTextColor(1, 0, 0, 1);
 			MotherDirectionTextCompassEast:SetTextColor(0.8, 0.8, 0.8, 0.2);
 			showMD=true;
-		elseif (icon == 7) then
+		elseif (icon == 1) then --Yellow Star
 			DirectionMultiplier = 0.5;
 			textOrientation = LOCALE_textOrientationEast;
 			textOrientationDecription = LOCALE_textOrientationDescriptionEast;
-			textureIconLeft = "Cross";
-			textureIconRight = "Cross";
+			textureIconLeft = "Star";
+			textureIconRight = "Star";
 			textureArrowLeft = "arrow_down.blp";
 			textureArrowMiddle = "arrow_down.blp";
 			textureArrowRight = "arrow_down.blp";
@@ -259,12 +262,12 @@ function md_Main()
 			MotherDirectionTextCompassSouth:SetTextColor(0.8, 0.8, 0.8, 0.2);
 			MotherDirectionTextCompassEast:SetTextColor(1, 0, 0, 1);
 			showMD=true;
-		elseif (icon == 8) then
+		elseif (icon == 2) then -- Orange Circle
 			DirectionMultiplier = 1.5;
 			textOrientation = LOCALE_textOrientationWest;
 			textOrientationDecription = LOCALE_textOrientationDescriptionWest;
-			textureIconLeft = "Skull";
-			textureIconRight = "Skull";
+			textureIconLeft = "Circle";
+			textureIconRight = "Circle";
 			textureArrowLeft = "arrow_up";
 			textureArrowMiddle = "arrow_up";
 			textureArrowRight = "arrow_up";
@@ -302,16 +305,28 @@ end
 local DrawRadians;
 local ActualHeading = 0;
 local Sin, Cos
-	
+local direction , facing
 local pi = math.pi;
 local pi2 = pi * 2;
 
 function md_3DArrow_OnUpdate()
-	local piOffset = pi * DirectionMultiplier;
+	--print ("DirectionMultiplier",DirectionMultiplier, GetPlayerFacing())
+	local piOffset = math.pi * DirectionMultiplier;
 	--local direction = -playerModel:GetFacing() - piOffset;
-	local direction = -GetPlayerFacing() - piOffset;
+	if GetPlayerFacing() then
+		direction = -1*GetPlayerFacing() - piOffset;
+		else
+		direction =  piOffset;
+	end
 	
-	local facing = GetPlayerFacing();
+	if GetPlayerFacing() then
+		facing = GetPlayerFacing();
+		else
+		facing = 3
+	end
+
+	
+	--print ("dir",direction, piOffset)
 	local val = (direction*54/math.pi + 108) % 108;
 	local col, row = math.floor(val % 9), math.floor(val / 9);
 	
@@ -337,7 +352,12 @@ end
 
 function md_CompassArrow_OnUpdate()
 	--local ActualHeading = pi2 - playerModel:GetFacing();
+	if GetPlayerFacing() then
 	local ActualHeading = pi2 - GetPlayerFacing()
+	else
+	local ActualHeading = pi2 - GetPlayerFacing()
+	end
+	
 	local piOffset = pi * 0.25;
 	
 	local DrawRadians = ActualHeading + piOffset;
