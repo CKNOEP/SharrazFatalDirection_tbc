@@ -1,0 +1,11 @@
+## Interface: 20503
+## Title: Sharraz Fatal Attraction Direction tbc [/md]
+## Notes: Displays in what direction you have to move at Mother Shahraz
+## SavedVariables: MotherDirectionSaved
+## X-CompatibleLocales: enUS, deDE, frFR
+## Author: Logmana (Alleria/EU), lanscestre (Sulfuron/FR)
+## URL: 
+## Version: 1.102
+localization.lua
+MotherDirection.xml
+MotherDirection.lua
