@@ -91,13 +91,37 @@ function md_Initialize()
 	
 	
 	if not playerModel then
-	local Tex  = Minimap:SetPlayerTexture("Interface\\Minimap\\Vehicle-SilvershardMines-Arrow")	
+	-- Minimap:SetPlayerTexture("Interface\\Minimap\\Vehicle-SilvershardMines-Arrow")	
+	 ---Minimap:SetPlayerTexture("Interface\\Minimap\\MinimapArrow") -- default texture
+	 
+	 --Minimap:SetScale(1)
+	 --Minimap:SetBlipTexture("")
+	 
+	 
+	--Minimap:SetBlipTexture("Interface\\Minimap\\ObjectIcons")
+	 --Interface\Minimap\ObjectIcons.blp --default
+	--Minimap:SetMaskTexture("Interface\\AddOns\\SharrazFatalDirection_tbc\\icons\\heart")
+
+    
+	
+	
+	end
+
+	
+	--Tex:SetScale(2)
 	--print ("Tex",Minimap.Texture)
 	local t = { _G["Minimap"]:GetChildren() }
 		--print("t",t)
 		for i = #t, 1, -1 do
 			local v = t[i]
-			--print (v:GetObjectType(), v:GetName())
+			print (v:GetObjectType(), v:GetName())
+			frm = v:GetName()
+			
+			if t[i] then
+			t[i]:SetScale(1)
+			--t[i]:SetScale(2)
+			print (frm," hide")
+			end
 			if v:GetObjectType() == "Model" and not v:GetName() then
 				playerModel = v
 				--print (playerModel:GetName())
@@ -123,7 +147,7 @@ function md_Initialize()
 	
 	end
 	
-end
+
 
 function md_OnOff(var1)
 	if (var1 == "toggle") then
@@ -194,8 +218,8 @@ function md_OnOff(var1)
 	elseif (var1 == "resetwin") then
 		MotherDirectionHoverFrame:ClearAllPoints();
 		MotherDirectionCompassFrame:ClearAllPoints();
-		MotherDirectionHoverFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-		MotherDirectionCompassFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+		MotherDirectionHoverFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 200)
+		MotherDirectionCompassFrame:SetPoint("CENTER", UIParent, "CENTER", 50, 200)
 		ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Window's resetted");
 	elseif  (var1 == "lock") then
 		if (not MDlocked) then
@@ -246,7 +270,7 @@ function md_ActivateStatic()
 end
 
 function md_ActivateDynamic()
-	MotherDirectionTextOrientationDecription:Hide();
+	MotherDirectionTextOrientationDecription:Show();
 	MotherDirectionArrowLeft:Hide();
 	MotherDirectionArrowMiddle:Hide();
 	MotherDirectionArrowRight:Hide();

@@ -139,6 +139,15 @@
 					self:StartMoving();
 					self.isMoving = true;
 				end
+				
+				if ( ( ( not self.isLocked ) or ( self.isLocked == true ) ) and ( button == "RightButton" ) ) then
+				self.isLocked = false
+				
+				end
+				if ( ( ( not self.isLocked ) or ( self.isLocked == true ) ) and ( button == "LeftButton" ) ) then
+				self.isLocked = false
+				
+				end
 			</OnMouseDown>
 			<OnHide>
 				if ( self.isMoving ) then
