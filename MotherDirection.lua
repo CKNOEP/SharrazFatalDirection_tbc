@@ -10,11 +10,13 @@ function md_OnLoad(self)
 	self:RegisterEvent("PLAYER_TARGET_CHANGED");
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
 	self:RegisterEvent("PLAYER_ENTERING_WORLD");
+	self:RegisterEvent("ZONE_CHANGED_INDOORS");
 	print ("Mother Sharraz Fatal Attraction Direction Loaded /md to configure")
 end
 
 function md_OnEvent(event)
 	--if event then print ("event",event) end
+	--print (event)
 	if (event == "VARIABLES_LOADED") then
 		md_Initialize();
 	end
@@ -28,6 +30,15 @@ function md_OnEvent(event)
 		if (arg2 == "UNIT_DIED") then
 			md_Deactivation(arg7);
 		end
+		
+		if not GetPlayerFacing() then
+		MotherDirectionSaved.mode = "static"
+		md_ActivateStatic()
+		else
+		MotherDirectionSaved.mode = "dynamic"
+		md_ActivateDynamic()
+		end
+	
 	end
 end
 
@@ -43,6 +54,11 @@ function md_Initialize()
 	
 	if (MotherDirectionSaved.mode == nil) then
 		MotherDirectionSaved.mode = "dynamic";
+	end
+	if not GetPlayerFacing() then
+	MotherDirectionSaved.mode = "static"
+	else
+	MotherDirectionSaved.mode = "dynamic";
 	end
 	
 	MDlocked = true;
@@ -73,18 +89,38 @@ function md_Initialize()
 	SLASH_MDTOOGLE1="/md";
 	SLASH_MDTOOGLE2="/motherdirection";
 	
+	
 	if not playerModel then
-		local t = { Minimap:GetChildren() }
-		print("t",t)
+	local Tex  = Minimap:SetPlayerTexture("Interface\\Minimap\\Vehicle-SilvershardMines-Arrow")	
+	--print ("Tex",Minimap.Texture)
+	local t = { _G["Minimap"]:GetChildren() }
+		--print("t",t)
 		for i = #t, 1, -1 do
 			local v = t[i]
-			print (v:GetObjectType(), v:GetName(),v:GetObjectType())
+			--print (v:GetObjectType(), v:GetName())
 			if v:GetObjectType() == "Model" and not v:GetName() then
 				playerModel = v
-				print (playerModel:GetName())
+				--print (playerModel:GetName())
 				break
 			end
 		end
+	-----
+	local list = { _G["Minimap"]:GetRegions() }
+	--print ("region ",list,#list)
+	--for i,j in pairs(list) do
+	for i = #list, 1, -1 do 
+	local j = list[i]
+--		Scan for a no-name texture with a specific file loaded.
+		--print("name",j:GetName(), j:GetTexture():lower())
+		if j:IsObjectType("Texture") and not j:GetName() and j:GetTexture():lower()=="interface\\minimap\\minimaparrow" then
+			mmarrow=j;--	Found it, save and stop scanning
+		
+			break;
+		end
+	end
+	---
+	
+	
 	end
 	
 end
@@ -214,7 +250,12 @@ function md_ActivateDynamic()
 	MotherDirectionArrowLeft:Hide();
 	MotherDirectionArrowMiddle:Hide();
 	MotherDirectionArrowRight:Hide();
-	MotherDirection3DArrow:Show();
+	if GetPlayerFacing() then
+	MotherDirection3DArrow:Show()
+	else
+	MotherDirection3DArrow:Hide()
+	end
+		
 end
 
 function md_Main()
@@ -249,7 +290,7 @@ function md_Main()
 			MotherDirectionTextCompassEast:SetTextColor(0.8, 0.8, 0.8, 0.2);
 			showMD=true;
 		elseif (icon == 1) then --Yellow Star
-			DirectionMultiplier = 0.5;
+			DirectionMultiplier = 1.5;
 			textOrientation = LOCALE_textOrientationEast;
 			textOrientationDecription = LOCALE_textOrientationDescriptionEast;
 			textureIconLeft = "Star";
@@ -263,7 +304,7 @@ function md_Main()
 			MotherDirectionTextCompassEast:SetTextColor(1, 0, 0, 1);
 			showMD=true;
 		elseif (icon == 2) then -- Orange Circle
-			DirectionMultiplier = 1.5;
+			DirectionMultiplier = 0.5;
 			textOrientation = LOCALE_textOrientationWest;
 			textOrientationDecription = LOCALE_textOrientationDescriptionWest;
 			textureIconLeft = "Circle";
@@ -325,6 +366,7 @@ function md_3DArrow_OnUpdate()
 		facing = 3
 	end
 
+
 	
 	--print ("dir",direction, piOffset)
 	local val = (direction*54/math.pi + 108) % 108;
@@ -340,6 +382,7 @@ function md_3DArrow_OnUpdate()
 		end
 	end
 	
+	--print ("row:",row)
 	if (row == 0 or row == 11 ) then
 		MotherDirection3DArrow:SetVertexColor(0.2,1,0.2,1);
 	elseif (row == 1 or row == 2 or row == 9 or row == 10) then
@@ -350,12 +393,53 @@ function md_3DArrow_OnUpdate()
 	
 end
 
+
+function GetPlayerBearing()
+	local math=math;--			Local pointer to the Math library
+	local mmring=MinimapCompassTexture;--	Pointer to the Compass Ring
+	local mmarrow;--			Upvalue to hold the pointer to the Player Arrow
+
+--	Scan for Player Arrow Texture
+	local list={Minimap:GetRegions()};
+	for i,j in pairs(list) do
+--		Scan for a no-name texture with a specific file loaded.
+		if j:IsObjectType("Texture") and not j:GetName() and j:GetTexture():lower()=="interface\\minimap\\minimaparrow" then
+			mmarrow=j;--	Found it, save and stop scanning
+			break;
+		end
+	end
+		
+		
+		
+		local obj=GetCVar("rotateMinimap")=="1" and mmring or mmarrow;--	Use the correct texture
+		if not obj then return 0; end--						Hopefully this doesn't happen
+
+		local fx,fy,bx,by=obj:GetTexCoord();--	Only need front and back of one side (left is returned first)
+		local a,dx,dy=0,fx-bx,by-fy;--		Y-Axis flipped for textures so Y values are swapped
+		if obj==mmring then dx=-dx; end--	Compass Ring spins the opposite direction
+		if dy==0 then--				Can't divide by zero
+			a=dx<0 and math.pi or 0;--	Could either be one or the other in this condition
+		else
+			a=math.atan(dx/dy)+(dy<0 and math.pi or 0);--	atan() only returns half of the values we need, add PI when needed
+		end
+		--print("aaaaa",a)
+		return a;
+	end
+
+--------------
+
 function md_CompassArrow_OnUpdate()
-	--local ActualHeading = pi2 - playerModel:GetFacing();
+	
+	if GetPlayerFacing() then
+		local ActualHeading = pi2 - GetPlayerFacing()
+		else
+		local ActualHeading = pi2 - 1 
+	end
+	
 	if GetPlayerFacing() then
 	local ActualHeading = pi2 - GetPlayerFacing()
 	else
-	local ActualHeading = pi2 - GetPlayerFacing()
+	local ActualHeading = pi2 - 1
 	end
 	
 	local piOffset = pi * 0.25;
