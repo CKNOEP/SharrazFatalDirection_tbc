@@ -114,13 +114,13 @@ function md_Initialize()
 		--print("t",t)
 		for i = #t, 1, -1 do
 			local v = t[i]
-			print (v:GetObjectType(), v:GetName())
+			--print (v:GetObjectType(), v:GetName())
 			frm = v:GetName()
 			
 			if t[i] then
 			t[i]:SetScale(1)
 			--t[i]:SetScale(2)
-			print (frm," hide")
+			--print (frm," hide")
 			end
 			if v:GetObjectType() == "Model" and not v:GetName() then
 				playerModel = v
