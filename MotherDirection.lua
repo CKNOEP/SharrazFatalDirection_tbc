@@ -137,9 +137,9 @@ function md_Initialize()
 --		Scan for a no-name texture with a specific file loaded.
 		--print("name",j:GetName(), j:GetTexture():lower())
 		if j:IsObjectType("Texture") and not j:GetName() and j:GetTexture():lower()=="interface\\minimap\\minimaparrow" then
-			mmarrow=j;--	Found it, save and stop scanning
+			--mmarrow=j;--	Found it, save and stop scanning
 		
-			break;
+			--break;
 		end
 	end
 	---
