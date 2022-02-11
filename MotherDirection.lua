@@ -1,279 +1,236 @@
-local DirectionMultiplier = 2;
-local playerModel;
+local addonName, addon = ...
+local DirectionMultiplier = 2
+local L = addon.L
 
-MotherDirectionSaved = {};
+MotherDirectionSaved = {}
+local MDlocked, showMD, icon
+local MD_ADDON_DIR = "Interface\\AddOns\\"..addonName.."\\icons\\"
+local textOrientation
+local textOrientationDecription
+local textureIconLeft
+local textureIconRight
+local textureArrowLeft
+local textureArrowMiddle
+local textureArrowRight
 
-function md_OnLoad(self)
-	--print ("self",self:GetName())
-	self:RegisterEvent("VARIABLES_LOADED");
-	self:RegisterEvent("RAID_TARGET_UPDATE");
-	self:RegisterEvent("PLAYER_TARGET_CHANGED");
-	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
-	self:RegisterEvent("PLAYER_ENTERING_WORLD");
-	self:RegisterEvent("ZONE_CHANGED_INDOORS");
-	print ("Mother Sharraz Fatal Attraction Direction Loaded /md to configure")
+local label = "|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: %s"
+function addon.Print(msg,plain)
+	local out = plain and msg or format(label,msg)
+	local chatFrame = (SELECTED_CHAT_FRAME or DEFAULT_CHAT_FRAME)
+	chatFrame:AddMessage(out)
 end
 
-function md_OnEvent(event)
-	--if event then print ("event",event) end
-	--print (event)
-	if (event == "VARIABLES_LOADED") then
-		md_Initialize();
+function addon.OnLoad(self)
+	self:RegisterEvent("ADDON_LOADED")
+	self:RegisterEvent("RAID_TARGET_UPDATE")
+	self:RegisterEvent("PLAYER_TARGET_CHANGED")
+	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("ZONE_CHANGED_INDOORS")
+	addon.Print("Loaded /md to configure")
+end
+
+function addon.OnEvent(self, event, ...)
+	local arg1 = ...
+	if (event == "ADDON_LOADED") and arg1 == addonName then
+		addon.Initialize()
 	end
 	if (event == "RAID_TARGET_UPDATE") then
-		md_Main();
+		addon.Main()
 	end
 	if (event == "PLAYER_TARGET_CHANGED") then
-		md_Activation();
+		addon.Activation()
 	end
 	if (event == "COMBAT_LOG_EVENT_UNFILTERED") then
-		if (arg2 == "UNIT_DIED") then
-			md_Deactivation(arg7);
+		local _,subEvent,_,srcGUID,srcName,_,_,dstGUID,dstName = CombatLogGetCurrentEventInfo()
+		if (subEvent == "UNIT_DIED") then
+			addon.Deactivation(dstName)
 		end
 		
 		if not GetPlayerFacing() then
-		MotherDirectionSaved.mode = "static"
-		md_ActivateStatic()
+			MotherDirectionSaved.mode = "static"
+			addon.ActivateStatic()
 		else
-		MotherDirectionSaved.mode = "dynamic"
-		md_ActivateDynamic()
+			MotherDirectionSaved.mode = "dynamic"
+			addon.ActivateDynamic()
 		end
 	
 	end
 end
 
-function md_Initialize()
+function addon.Initialize()
 
 	if (MotherDirectionSaved.toggle == nil) then
-		MotherDirectionSaved.toggle = false;
+		MotherDirectionSaved.toggle = false
 	end
 
 	if (MotherDirectionSaved.status == nil) then
-		MotherDirectionSaved.status = "|cffcc0000inactive|r";
+		MotherDirectionSaved.status = "|cffcc0000inactive|r"
 	end
 	
 	if (MotherDirectionSaved.mode == nil) then
-		MotherDirectionSaved.mode = "dynamic";
+		MotherDirectionSaved.mode = "dynamic"
 	end
 	if not GetPlayerFacing() then
 	MotherDirectionSaved.mode = "static"
 	else
-	MotherDirectionSaved.mode = "dynamic";
+	MotherDirectionSaved.mode = "dynamic"
 	end
 	
-	MDlocked = true;
-	MotherDirectionHoverFrame.isLocked = true;
-	MotherDirectionCompassFrame.isLocked = true;
+	MDlocked = true
+	MotherDirectionHoverFrame.isLocked = true
+	MotherDirectionCompassFrame.isLocked = true
 	
-	MotherDirectionTextCompassNorth:SetText(LOCALE_textNorth);
-	MotherDirectionTextCompassSouth:SetText(LOCALE_textSouth);
-	MotherDirectionTextCompassWest:SetText(LOCALE_textWest);
-	MotherDirectionTextCompassEast:SetText(LOCALE_textEast);
-	textUnit = LOCALE_textUnit;
+	MotherDirectionTextCompassNorth:SetText(L.LOCALE_textNorth)
+	MotherDirectionTextCompassSouth:SetText(L.LOCALE_textSouth)
+	MotherDirectionTextCompassWest:SetText(L.LOCALE_textWest)
+	MotherDirectionTextCompassEast:SetText(L.LOCALE_textEast)
 	
-	md_Main();
+	addon.Main()
 	
-	ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Addon is ["..MotherDirectionSaved.status.."]");
+	addon.Print("Addon is ["..MotherDirectionSaved.status.."]")
 	
 	if (MotherDirectionSaved.mode == "static") then
-		md_ActivateStatic();
-		ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Mode is [|cffb2b299"..MotherDirectionSaved.mode.."|r]");		
+		addon.ActivateStatic()
+		addon.Print("Mode is [|cffb2b299"..MotherDirectionSaved.mode.."|r]")
 	elseif (MotherDirectionSaved.mode == "dynamic") then
-		md_ActivateDynamic();
-		ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Mode is [|cff9f7fff"..MotherDirectionSaved.mode.."|r]");
+		addon.ActivateDynamic()
+		addon.Print("Mode is [|cff9f7fff"..MotherDirectionSaved.mode.."|r]")
 	elseif (MotherDirectionSaved.mode == "compass") then
-		ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Mode is [|cffffcc00"..MotherDirectionSaved.mode.."|r]");
+		addon.Print("Mode is [|cffffcc00"..MotherDirectionSaved.mode.."|r]")
 	end
 	
-	SlashCmdList["MDTOOGLE"]=md_OnOff;
-	SLASH_MDTOOGLE1="/md";
-	SLASH_MDTOOGLE2="/motherdirection";
-	
-	
-	if not playerModel then
-	-- Minimap:SetPlayerTexture("Interface\\Minimap\\Vehicle-SilvershardMines-Arrow")	
-	 ---Minimap:SetPlayerTexture("Interface\\Minimap\\MinimapArrow") -- default texture
-	 
-	 --Minimap:SetScale(1)
-	 --Minimap:SetBlipTexture("")
-	 
-	 
-	--Minimap:SetBlipTexture("Interface\\Minimap\\ObjectIcons")
-	 --Interface\Minimap\ObjectIcons.blp --default
-	--Minimap:SetMaskTexture("Interface\\AddOns\\SharrazFatalDirection_tbc\\icons\\heart")
+	SlashCmdList["MDTOOGLE"]=addon.OnOff
+	SLASH_MDTOOGLE1="/md"
+	SLASH_MDTOOGLE2="/motherdirection"
 
-    
-	
-	
-	end
+end
 
-	
-	--Tex:SetScale(2)
-	--print ("Tex",Minimap.Texture)
-	local t = { _G["Minimap"]:GetChildren() }
-		--print("t",t)
-		for i = #t, 1, -1 do
-			local v = t[i]
-			--print (v:GetObjectType(), v:GetName())
-			frm = v:GetName()
-			
-			if t[i] then
-			t[i]:SetScale(1)
-			--t[i]:SetScale(2)
-			--print (frm," hide")
-			end
-			if v:GetObjectType() == "Model" and not v:GetName() then
-				playerModel = v
-				--print (playerModel:GetName())
-				break
-			end
-		end
-	-----
-	local list = { _G["Minimap"]:GetRegions() }
-	--print ("region ",list,#list)
-	--for i,j in pairs(list) do
-	for i = #list, 1, -1 do 
-	local j = list[i]
---		Scan for a no-name texture with a specific file loaded.
-		--print("name",j:GetName(), j:GetTexture():lower())
-		--if j:IsObjectType("Texture") and not j:GetName() and j:GetTexture():lower()=="interface\\minimap\\minimaparrow" then
-			--mmarrow=j;--	Found it, save and stop scanning
-		
-			--break;
-		--end
-	end
-	---
-	
-	
-	end
-	
-
-
-function md_OnOff(var1)
+function addon.OnOff(var1)
 	if (var1 == "toggle") then
 		if (MotherDirectionSaved.toggle) then
-			MotherDirectionSaved.toggle = false;
-			MotherDirectionSaved.status = "|cffcc0000inactive|r";
-			MotherDirectionHoverFrame:Hide();
-			MotherDirectionCompassFrame:Hide();
-			MDlocked = true;
-			MotherDirectionHoverFrame.isLocked = true;
-			MotherDirectionCompassFrame.isLocked = true;
+			MotherDirectionSaved.toggle = false
+			MotherDirectionSaved.status = "|cffcc0000inactive|r"
+			MotherDirectionHoverFrame:Hide()
+			MotherDirectionCompassFrame:Hide()
+			MDlocked = true
+			MotherDirectionHoverFrame.isLocked = true
+			MotherDirectionCompassFrame.isLocked = true
 		else
-			MotherDirectionSaved.toggle = true;
-			MotherDirectionSaved.status = "|cff00ff00active|r";
-			md_Main();
+			MotherDirectionSaved.toggle = true
+			MotherDirectionSaved.status = "|cff00ff00active|r"
+			addon.Main()
 		end
-		ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Addon is now ["..MotherDirectionSaved.status.."]");
+		addon.Print("Addon is now ["..MotherDirectionSaved.status.."]")
 	elseif (var1 == "static") then
 		if not ( MotherDirectionSaved.mode == "static") then
-			MotherDirectionSaved.mode = "static";
-			md_ActivateStatic();
-			MotherDirectionCompassFrame:Hide();
+			MotherDirectionSaved.mode = "static"
+			addon.ActivateStatic()
+			MotherDirectionCompassFrame:Hide()
 			if (showMD) then
-				MotherDirectionHoverFrame:Show();
+				MotherDirectionHoverFrame:Show()
 			end
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Mode changed to [|cffb2b299"..MotherDirectionSaved.mode.."|r]");
+			addon.Print("Mode changed to [|cffb2b299"..MotherDirectionSaved.mode.."|r]")
 		else
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Already in |cffb2b299static|r mode");
+			addon.Print("Already in |cffb2b299static|r mode")
 		end
 	elseif (var1 == "dynamic") then
 		if not (MotherDirectionSaved.mode == "dynamic") then
-			MotherDirectionSaved.mode = "dynamic";
-			md_ActivateDynamic();
-			MotherDirectionCompassFrame:Hide();
+			MotherDirectionSaved.mode = "dynamic"
+			addon.ActivateDynamic()
+			MotherDirectionCompassFrame:Hide()
 			if (showMD) then
-				MotherDirectionHoverFrame:Show();
+				MotherDirectionHoverFrame:Show()
 			end
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Mode changed to [|cff9f7fff"..MotherDirectionSaved.mode.."|r]");
+			addon.Print("Mode changed to [|cff9f7fff"..MotherDirectionSaved.mode.."|r]")
 		else
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Already in |cff9f7fffdynamic|r mode");
+			addon.Print("Already in |cff9f7fffdynamic|r mode")
 		end
 	elseif (var1 == "compass") then
 		if not (MotherDirectionSaved.mode == "compass") then
-			MotherDirectionSaved.mode = "compass";
-			MotherDirectionHoverFrame:Hide();
+			MotherDirectionSaved.mode = "compass"
+			MotherDirectionHoverFrame:Hide()
 			if (showMD) then
-				MotherDirectionCompassFrame:Show();
+				MotherDirectionCompassFrame:Show()
 			end
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Mode changed to [|cffffcc00"..MotherDirectionSaved.mode.."|r]");
+			addon.Print("Mode changed to [|cffffcc00"..MotherDirectionSaved.mode.."|r]")
 		else
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Already in |cffffcc00compass|r mode");
+			addon.Print("Already in |cffffcc00compass|r mode")
 		end
 	elseif (var1 == "unlock") then
 		if (MotherDirectionSaved.toggle) then
 			if (MDlocked) then
-				MDlocked = false;
-				MotherDirectionHoverFrame.isLocked = false;
-				MotherDirectionCompassFrame.isLocked = false;
-				MotherDirectionHoverFrame:Show();
-				MotherDirectionCompassFrame:Show();
-				ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Windows unlocked");
+				MDlocked = false
+				MotherDirectionHoverFrame.isLocked = false
+				MotherDirectionCompassFrame.isLocked = false
+				MotherDirectionHoverFrame:Show()
+				MotherDirectionCompassFrame:Show()
+				addon.Print("Windows unlocked")
 			else
-				ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Already locked");
+				addon.Print("Already locked")
 			end
 		else
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Can't unlock while addon is |cffcc0000inactive|r");
+			addon.Print("Can't unlock while addon is |cffcc0000inactive|r")
 		end
 	elseif (var1 == "resetwin") then
-		MotherDirectionHoverFrame:ClearAllPoints();
-		MotherDirectionCompassFrame:ClearAllPoints();
+		MotherDirectionHoverFrame:ClearAllPoints()
+		MotherDirectionCompassFrame:ClearAllPoints()
 		MotherDirectionHoverFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 200)
 		MotherDirectionCompassFrame:SetPoint("CENTER", UIParent, "CENTER", 50, 200)
-		ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Window's resetted");
+		addon.Print("Window's resetted")
 	elseif  (var1 == "lock") then
 		if (not MDlocked) then
-			md_Main();
+			addon.Main()
 		else
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Already locked");
+			addon.Print("Already locked")
 		end			
 	else 
-		ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r rebuild by lancestre (Sulfuron/EU)");
-		ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Addon is ["..MotherDirectionSaved.status.."]");
+		addon.Print("rebuild by lancestre (Sulfuron/EU)")
+		addon.Print("Addon is ["..MotherDirectionSaved.status.."]")
 		if (MotherDirectionSaved.mode == "static") then
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Mode is [|cffb2b299"..MotherDirectionSaved.mode.."|r]");		
+			addon.Print("Mode is [|cffb2b299"..MotherDirectionSaved.mode.."|r]")
 		elseif (MotherDirectionSaved.mode == "dynamic") then
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Mode is [|cff9f7fff"..MotherDirectionSaved.mode.."|r]");
+			addon.Print("Mode is [|cff9f7fff"..MotherDirectionSaved.mode.."|r]")
 		elseif (MotherDirectionSaved.mode == "compass") then	
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Mode is [|cffffcc00"..MotherDirectionSaved.mode.."|r]");
+			addon.Print("Mode is [|cffffcc00"..MotherDirectionSaved.mode.."|r]")
 		end	
-		ChatFrame1:AddMessage(" - \"/md\" or \"/motherdirection\" to show this message");
-		ChatFrame1:AddMessage(" - \"/md toggle\" to turn the addon [|cff00ff00on|r] / [|cffcc0000off|r]");
-		ChatFrame1:AddMessage(" - \"/md static\" switches the addon in |cffb2b299static|r mode");
-		ChatFrame1:AddMessage(" - \"/md dynamic\" switches the addon in |cff9f7fffdynamic|r mode");
-		ChatFrame1:AddMessage(" - \"/md compass\" switches the addon in |cffffcc00compass|r mode");
-		ChatFrame1:AddMessage(" - \"/md \[lock\|unlock\]\" locks\/unlocks the MD window's");
-		ChatFrame1:AddMessage(" - \"/md resetwin\" sets the MD windows's to default position");
+		addon.Print(" - \"/md\" or \"/motherdirection\" to show this message",true)
+		addon.Print(" - \"/md toggle\" to turn the addon [|cff00ff00on|r] / [|cffcc0000off|r]",true)
+		addon.Print(" - \"/md static\" switches the addon in |cffb2b299static|r mode",true)
+		addon.Print(" - \"/md dynamic\" switches the addon in |cff9f7fffdynamic|r mode",true)
+		addon.Print(" - \"/md compass\" switches the addon in |cffffcc00compass|r mode",true)
+		addon.Print(" - \"/md \[lock\|unlock\]\" locks\/unlocks the MD window's",true)
+		addon.Print(" - \"/md resetwin\" sets the MD windows's to default position",true)
 	end
 end
 
-function md_Activation()
-	if (UnitName("target") == textUnit) then
+function addon.Activation()
+	if (UnitName("target") == L.LOCALE_textUnit) then
 		if (not UnitIsDeadOrGhost("target")) and (not MotherDirectionSaved.toggle) then
-			md_OnOff("toggle");
+			addon.OnOff("toggle")
 		end
 	end
 end
 
-function md_Deactivation(destName)
-	if (destName == textUnit) and (MotherDirectionSaved.toggle) then
-		md_OnOff("toggle");
+function addon.Deactivation(destName)
+	if (destName == L.LOCALE_textUnit) and (MotherDirectionSaved.toggle) then
+		addon.OnOff("toggle")
 	end
 end
 
-function md_ActivateStatic()
-	MotherDirectionTextOrientationDecription:Show();
-	MotherDirectionArrowLeft:Show();
-	MotherDirectionArrowMiddle:Show();
-	MotherDirectionArrowRight:Show();
-	MotherDirection3DArrow:Hide();
+function addon.ActivateStatic()
+	MotherDirectionTextOrientationDecription:Show()
+	MotherDirectionArrowLeft:Show()
+	MotherDirectionArrowMiddle:Show()
+	MotherDirectionArrowRight:Show()
+	MotherDirection3DArrow:Hide()
 end
 
-function md_ActivateDynamic()
-	MotherDirectionTextOrientationDecription:Show();
-	MotherDirectionArrowLeft:Hide();
-	MotherDirectionArrowMiddle:Hide();
-	MotherDirectionArrowRight:Hide();
+function addon.ActivateDynamic()
+	MotherDirectionTextOrientationDecription:Show()
+	MotherDirectionArrowLeft:Hide()
+	MotherDirectionArrowMiddle:Hide()
+	MotherDirectionArrowRight:Hide()
 	if GetPlayerFacing() then
 	MotherDirection3DArrow:Show()
 	else
@@ -282,177 +239,132 @@ function md_ActivateDynamic()
 		
 end
 
-function md_Main()
-	
-
+function addon.Main()
 	if (MotherDirectionSaved.toggle) then
 	
 		--lock all Windows on Action
 		if (not MDlocked) then
-			MDlocked = true;
-			MotherDirectionHoverFrame.isLocked = true;
-			MotherDirectionCompassFrame.isLocked = true;
-			ChatFrame1:AddMessage("|cff990000M|r|cff6699ffother|r|cff990000D|r|cff6699ffirection|r: Windows locked");
+			MDlocked = true
+			MotherDirectionHoverFrame.isLocked = true
+			MotherDirectionCompassFrame.isLocked = true
+			addon.Print("Windows locked")
 		end
 	
-		icon=GetRaidTargetIndex("player");
-		
-		MD_ADDON_DIR = "Interface\\AddOns\\SharrazFatalDirection_tbc\\icons\\";
+		icon=GetRaidTargetIndex("player")
 		
 		if (icon == 3) then--2 -> Purple Diamond
-			DirectionMultiplier = 2; --Evertime North .. need to go Shahraz Room again to do this better
-			textOrientation = LOCALE_textOrientationNorthSouth;
-			textOrientationDecription = LOCALE_textOrientationDescriptionNorthSouth;
-			textureIconLeft = "Diamond";
-			textureIconRight = "Diamond";
-			textureArrowLeft = "arrow_left.blp";
-			textureArrowMiddle = "arrow_stop.blp";
-			textureArrowRight = "arrow_right.blp";
-			MotherDirectionTextCompassNorth:SetTextColor(1, 0, 0, 2);
-			MotherDirectionTextCompassWest:SetTextColor(0.8, 0.8, 0.8, 0.2);
-			MotherDirectionTextCompassSouth:SetTextColor(1, 0, 0, 1);
-			MotherDirectionTextCompassEast:SetTextColor(0.8, 0.8, 0.8, 0.2);
-			showMD=true;
+			DirectionMultiplier = 2 --Everytime North .. need to go Shahraz Room again to do this better
+			textOrientation = L.LOCALE_textOrientationNorthSouth
+			textOrientationDecription = L.LOCALE_textOrientationDescriptionNorthSouth
+			textureIconLeft = "Diamond"
+			textureIconRight = "Diamond"
+			textureArrowLeft = "arrow_left.blp"
+			textureArrowMiddle = "arrow_stop.blp"
+			textureArrowRight = "arrow_right.blp"
+			MotherDirectionTextCompassNorth:SetTextColor(1, 0, 0, 2)
+			MotherDirectionTextCompassWest:SetTextColor(0.8, 0.8, 0.8, 0.2)
+			MotherDirectionTextCompassSouth:SetTextColor(1, 0, 0, 1)
+			MotherDirectionTextCompassEast:SetTextColor(0.8, 0.8, 0.8, 0.2)
+			showMD=true
 		elseif (icon == 1) then --Yellow Star
-			DirectionMultiplier = 1.5;
-			textOrientation = LOCALE_textOrientationEast;
-			textOrientationDecription = LOCALE_textOrientationDescriptionEast;
-			textureIconLeft = "Star";
-			textureIconRight = "Star";
-			textureArrowLeft = "arrow_down.blp";
-			textureArrowMiddle = "arrow_down.blp";
-			textureArrowRight = "arrow_down.blp";
-			MotherDirectionTextCompassNorth:SetTextColor(0.8, 0.8, 0.8, 0.2);
-			MotherDirectionTextCompassWest:SetTextColor(0.8, 0.8, 0.8, 0.2);
-			MotherDirectionTextCompassSouth:SetTextColor(0.8, 0.8, 0.8, 0.2);
-			MotherDirectionTextCompassEast:SetTextColor(1, 0, 0, 1);
-			showMD=true;
+			DirectionMultiplier = 1.5
+			textOrientation = L.LOCALE_textOrientationEast
+			textOrientationDecription = L.LOCALE_textOrientationDescriptionEast
+			textureIconLeft = "Star"
+			textureIconRight = "Star"
+			textureArrowLeft = "arrow_down.blp"
+			textureArrowMiddle = "arrow_down.blp"
+			textureArrowRight = "arrow_down.blp"
+			MotherDirectionTextCompassNorth:SetTextColor(0.8, 0.8, 0.8, 0.2)
+			MotherDirectionTextCompassWest:SetTextColor(0.8, 0.8, 0.8, 0.2)
+			MotherDirectionTextCompassSouth:SetTextColor(0.8, 0.8, 0.8, 0.2)
+			MotherDirectionTextCompassEast:SetTextColor(1, 0, 0, 1)
+			showMD=true
 		elseif (icon == 2) then -- Orange Circle
-			DirectionMultiplier = 0.5;
-			textOrientation = LOCALE_textOrientationWest;
-			textOrientationDecription = LOCALE_textOrientationDescriptionWest;
-			textureIconLeft = "Circle";
-			textureIconRight = "Circle";
-			textureArrowLeft = "arrow_up";
-			textureArrowMiddle = "arrow_up";
-			textureArrowRight = "arrow_up";
-			MotherDirectionTextCompassNorth:SetTextColor(0.8, 0.8, 0.8, 0.2);
-			MotherDirectionTextCompassWest:SetTextColor(1, 0, 0, 1);
-			MotherDirectionTextCompassSouth:SetTextColor(0.8, 0.8, 0.8, 0.2);
-			MotherDirectionTextCompassEast:SetTextColor(0.8, 0.8, 0.8, 0.2);
-			showMD=true;
+			DirectionMultiplier = 0.5
+			textOrientation = L.LOCALE_textOrientationWest
+			textOrientationDecription = L.LOCALE_textOrientationDescriptionWest
+			textureIconLeft = "Circle"
+			textureIconRight = "Circle"
+			textureArrowLeft = "arrow_up"
+			textureArrowMiddle = "arrow_up"
+			textureArrowRight = "arrow_up"
+			MotherDirectionTextCompassNorth:SetTextColor(0.8, 0.8, 0.8, 0.2)
+			MotherDirectionTextCompassWest:SetTextColor(1, 0, 0, 1)
+			MotherDirectionTextCompassSouth:SetTextColor(0.8, 0.8, 0.8, 0.2)
+			MotherDirectionTextCompassEast:SetTextColor(0.8, 0.8, 0.8, 0.2)
+			showMD=true
 		elseif (icon == nil) then
-			showMD=false;
+			showMD=false
 		end
 		
 		if (showMD) then
-			MotherDirectionTextOriention:SetText(textOrientation);
-			MotherDirectionTextOrientationDecription:SetText(textOrientationDecription);
-			MotherDirectionIconLeft:SetTexture(MD_ADDON_DIR..textureIconLeft);
-			MotherDirectionIconRight:SetTexture(MD_ADDON_DIR..textureIconRight);
-			MotherDirectionArrowMiddle:SetTexture(MD_ADDON_DIR..textureArrowMiddle);
-			MotherDirectionArrowLeft:SetTexture(MD_ADDON_DIR..textureArrowLeft);
-			MotherDirectionArrowRight:SetTexture(MD_ADDON_DIR..textureArrowRight);
+			MotherDirectionTextOriention:SetText(textOrientation)
+			MotherDirectionTextOrientationDecription:SetText(textOrientationDecription)
+			MotherDirectionIconLeft:SetTexture(MD_ADDON_DIR..textureIconLeft)
+			MotherDirectionIconRight:SetTexture(MD_ADDON_DIR..textureIconRight)
+			MotherDirectionArrowMiddle:SetTexture(MD_ADDON_DIR..textureArrowMiddle)
+			MotherDirectionArrowLeft:SetTexture(MD_ADDON_DIR..textureArrowLeft)
+			MotherDirectionArrowRight:SetTexture(MD_ADDON_DIR..textureArrowRight)
 			if (MotherDirectionSaved.mode == "static") or (MotherDirectionSaved.mode == "dynamic") then
-				MotherDirectionHoverFrame:Show();
-				MotherDirectionCompassFrame:Hide();
+				MotherDirectionHoverFrame:Show()
+				MotherDirectionCompassFrame:Hide()
 			elseif (MotherDirectionSaved.mode == "compass") then
-				MotherDirectionHoverFrame:Hide();
-				MotherDirectionCompassFrame:Show();
+				MotherDirectionHoverFrame:Hide()
+				MotherDirectionCompassFrame:Show()
 			end
 		else
-			MotherDirectionHoverFrame:Hide();
-			MotherDirectionCompassFrame:Hide();
+			MotherDirectionHoverFrame:Hide()
+			MotherDirectionCompassFrame:Hide()
 		end
 	end
 end
 
-local DrawRadians;
-local ActualHeading = 0;
+local DrawRadians
+local ActualHeading = 0
 local Sin, Cos
 local direction , facing
-local pi = math.pi;
-local pi2 = pi * 2;
+local pi = math.pi
+local pi2 = pi * 2
 
-function md_3DArrow_OnUpdate()
-	--print ("DirectionMultiplier",DirectionMultiplier, GetPlayerFacing())
-	local piOffset = math.pi * DirectionMultiplier;
-	--local direction = -playerModel:GetFacing() - piOffset;
+function addon.Arrow_OnUpdate(self, elapsed)
+	local piOffset = math.pi * DirectionMultiplier
+
 	if GetPlayerFacing() then
-		direction = -1*GetPlayerFacing() - piOffset;
-		else
-		direction =  piOffset;
-	end
-	
-	if GetPlayerFacing() then
-		facing = GetPlayerFacing();
-		else
+		direction = -1*GetPlayerFacing() - piOffset
+		facing = GetPlayerFacing()
+	else
+		direction =  piOffset
 		facing = 3
 	end
 
-
+	local val = (direction*54/math.pi + 108) % 108
+	local col, row = math.floor(val % 9), math.floor(val / 9)
 	
-	--print ("dir",direction, piOffset)
-	local val = (direction*54/math.pi + 108) % 108;
-	local col, row = math.floor(val % 9), math.floor(val / 9);
-	
-	MotherDirection3DArrow:SetTexCoord(col*56/512, (col+1)*56/512, row*42/512, (row+1)*42/512);
+	MotherDirection3DArrow:SetTexCoord(col*56/512, (col+1)*56/512, row*42/512, (row+1)*42/512)
 	
 	if (DirectionMultiplier == 2 or DirectionMultiplier == 1) then
 		if ( ((facing > pi * 1.5) and (facing < pi * 2)) or ((facing > 0) and (facing < pi * 0.5)) ) then
-			DirectionMultiplier = 2;
+			DirectionMultiplier = 2
 		else 
-			DirectionMultiplier = 1;
+			DirectionMultiplier = 1
 		end
 	end
 	
 	--print ("row:",row)
 	if (row == 0 or row == 11 ) then
-		MotherDirection3DArrow:SetVertexColor(0.2,1,0.2,1);
+		MotherDirection3DArrow:SetVertexColor(0.2,1,0.2,1)
 	elseif (row == 1 or row == 2 or row == 9 or row == 10) then
-		MotherDirection3DArrow:SetVertexColor(1,1,0,1);
+		MotherDirection3DArrow:SetVertexColor(1,1,0,1)
 	else
-		MotherDirection3DArrow:SetVertexColor(1,0,0,1);
+		MotherDirection3DArrow:SetVertexColor(1,0,0,1)
 	end
 	
 end
 
-
-function GetPlayerBearing()
-	local math=math;--			Local pointer to the Math library
-	local mmring=MinimapCompassTexture;--	Pointer to the Compass Ring
-	local mmarrow;--			Upvalue to hold the pointer to the Player Arrow
-
---	Scan for Player Arrow Texture
-	local list={Minimap:GetRegions()};
-	for i,j in pairs(list) do
---		Scan for a no-name texture with a specific file loaded.
-		if j:IsObjectType("Texture") and not j:GetName() and j:GetTexture():lower()=="interface\\minimap\\minimaparrow" then
-			mmarrow=j;--	Found it, save and stop scanning
-			break;
-		end
-	end
-		
-		
-		
-		local obj=GetCVar("rotateMinimap")=="1" and mmring or mmarrow;--	Use the correct texture
-		if not obj then return 0; end--						Hopefully this doesn't happen
-
-		local fx,fy,bx,by=obj:GetTexCoord();--	Only need front and back of one side (left is returned first)
-		local a,dx,dy=0,fx-bx,by-fy;--		Y-Axis flipped for textures so Y values are swapped
-		if obj==mmring then dx=-dx; end--	Compass Ring spins the opposite direction
-		if dy==0 then--				Can't divide by zero
-			a=dx<0 and math.pi or 0;--	Could either be one or the other in this condition
-		else
-			a=math.atan(dx/dy)+(dy<0 and math.pi or 0);--	atan() only returns half of the values we need, add PI when needed
-		end
-		--print("aaaaa",a)
-		return a;
-	end
-
 --------------
 
-function md_CompassArrow_OnUpdate()
+function addon.CompassArrow_OnUpdate()
 	
 	if GetPlayerFacing() then
 		local ActualHeading = pi2 - GetPlayerFacing()
@@ -466,16 +378,17 @@ function md_CompassArrow_OnUpdate()
 	local ActualHeading = pi2 - 1
 	end
 	
-	local piOffset = pi * 0.25;
+	local piOffset = pi * 0.25
 	
-	local DrawRadians = ActualHeading + piOffset;
+	local DrawRadians = ActualHeading + piOffset
 	
-	local Sin = math.sin(DrawRadians);
-	local Cos = math.cos(DrawRadians);
+	local Sin = math.sin(DrawRadians)
+	local Cos = math.cos(DrawRadians)
 		 
 	MotherDirectionCompassArrow:SetTexCoord(0.5+Sin, 0.5-Cos,
 		 0.5+Cos, 0.5+Sin,
 		 0.5-Cos, 0.5-Sin,
-		 0.5-Sin, 0.5+Cos);
-
+		 0.5-Sin, 0.5+Cos)
 end
+
+_G[addonName] = addon

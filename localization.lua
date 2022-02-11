@@ -1,41 +1,45 @@
-LOCALE_textOrientationWest = "WEST";
-LOCALE_textOrientationDescriptionWest = "\(Just straightforward\)";
-LOCALE_textOrientationEast = "EAST";
-LOCALE_textOrientationDescriptionEast = "(Turn 180 degree\)";
-LOCALE_textOrientationNorthSouth = "NORTH \/ SOUTH";
-LOCALE_textOrientationDescriptionNorthSouth = "\(90 degree - towards next wall";
-LOCALE_textNorth = "NORTH";
-LOCALE_textSouth = "SOUTH";
-LOCALE_textWest = "WEST";
-LOCALE_textEast = "EAST";
-LOCALE_textUnit = "Mother Shahraz";
+local addonName, addon = ...
+local L = {}
+addon.L = L
+
+L.LOCALE_textOrientationWest = "WEST";
+L.LOCALE_textOrientationDescriptionWest = "\(Just straightforward\)";
+L.LOCALE_textOrientationEast = "EAST";
+L.LOCALE_textOrientationDescriptionEast = "(Turn 180 degree\)";
+L.LOCALE_textOrientationNorthSouth = "NORTH \/ SOUTH";
+L.LOCALE_textOrientationDescriptionNorthSouth = "\(90 degree - towards next wall";
+L.LOCALE_textNorth = "NORTH";
+L.LOCALE_textSouth = "SOUTH";
+L.LOCALE_textWest = "WEST";
+L.LOCALE_textEast = "EAST";
+L.LOCALE_textUnit = "Mother Shahraz";
 
 if (GetLocale() == "frFR") then
-	LOCALE_textOrientationWest = "EST";
-	LOCALE_textOrientationDescriptionWest = "\(Juste tout droit\)";
-	LOCALE_textOrientationEast = "OUEST";
-	LOCALE_textOrientationDescriptionEast = "(Tourner à 180 degrés - demi tour\)";
-	LOCALE_textOrientationNorthSouth = "NORD \/ SUD";
-	LOCALE_textOrientationDescriptionNorthSouth = "\(90 degrés - contre le mur le plus proche\)";
-	LOCALE_textNorth = "NORD";
-	LOCALE_textSouth = "SUD";
-	LOCALE_textWest = "OUEST";
-	LOCALE_textEast = "EST";
-	LOCALE_textUnit = "Mère Shahraz";
+	L.LOCALE_textOrientationWest = "EST";
+	L.LOCALE_textOrientationDescriptionWest = "\(Juste tout droit\)";
+	L.LOCALE_textOrientationEast = "OUEST";
+	L.LOCALE_textOrientationDescriptionEast = "(Tourner à 180 degrés - demi tour\)";
+	L.LOCALE_textOrientationNorthSouth = "NORD \/ SUD";
+	L.LOCALE_textOrientationDescriptionNorthSouth = "\(90 degrés - contre le mur le plus proche\)";
+	L.LOCALE_textNorth = "NORD";
+	L.LOCALE_textSouth = "SUD";
+	L.LOCALE_textWest = "OUEST";
+	L.LOCALE_textEast = "EST";
+	L.LOCALE_textUnit = "Mère Shahraz";
 end
 
 if (GetLocale() == "deDE") then
-	LOCALE_textOrientationWest = "WESTEN";
-	LOCALE_textOrientationDescriptionWest = "\(Einfach geradeaus\)";
-	LOCALE_textOrientationEast = "OSTEN";
-	LOCALE_textOrientationDescriptionEast = "(180 Grad drehen\)";
-	LOCALE_textOrientationNorthSouth = "NORDEN \/ S\195\156DEN";
-	LOCALE_textOrientationDescriptionNorthSouth = "\(90 Grad - gegen n\195\164chste Wand\)";
-	LOCALE_textNorth = "NORD";
-	LOCALE_textSouth = "S\195\156D";
-	LOCALE_textWest = "WEST";
-	LOCALE_textEast = " OST";
-	LOCALE_textUnit = "Mutter Shahraz";
+	L.LOCALE_textOrientationWest = "WESTEN";
+	L.LOCALE_textOrientationDescriptionWest = "\(Einfach geradeaus\)";
+	L.LOCALE_textOrientationEast = "OSTEN";
+	L.LOCALE_textOrientationDescriptionEast = "(180 Grad drehen\)";
+	L.LOCALE_textOrientationNorthSouth = "NORDEN \/ S\195\156DEN";
+	L.LOCALE_textOrientationDescriptionNorthSouth = "\(90 Grad - gegen n\195\164chste Wand\)";
+	L.LOCALE_textNorth = "NORD";
+	L.LOCALE_textSouth = "S\195\156D";
+	L.LOCALE_textWest = "WEST";
+	L.LOCALE_textEast = " OST";
+	L.LOCALE_textUnit = "Mutter Shahraz";
 end
 
 if (GetLocale() == "enGB") then
