@@ -367,23 +367,23 @@ end
 function addon.CompassArrow_OnUpdate()
 	
 	if GetPlayerFacing() then
-		local ActualHeading = pi2 - GetPlayerFacing()
-		else
-		local ActualHeading = pi2 - 1 
+		ActualHeading = pi2 - GetPlayerFacing()
+	else
+		ActualHeading = pi2 - 1
 	end
 	
 	if GetPlayerFacing() then
-	local ActualHeading = pi2 - GetPlayerFacing()
+	 	ActualHeading = pi2 - GetPlayerFacing()
 	else
-	local ActualHeading = pi2 - 1
+		ActualHeading = pi2 - 1
 	end
 	
 	local piOffset = pi * 0.25
 	
-	local DrawRadians = ActualHeading + piOffset
+	DrawRadians = ActualHeading + piOffset
 	
-	local Sin = math.sin(DrawRadians)
-	local Cos = math.cos(DrawRadians)
+	Sin = math.sin(DrawRadians)
+	Cos = math.cos(DrawRadians)
 		 
 	MotherDirectionCompassArrow:SetTexCoord(0.5+Sin, 0.5-Cos,
 		 0.5+Cos, 0.5+Sin,
