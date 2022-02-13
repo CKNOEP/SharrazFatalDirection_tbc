@@ -4,8 +4,7 @@
 ## SavedVariables: MotherDirectionSaved
 ## X-CompatibleLocales: enUS, deDE, frFR
 ## Author: Logmana (Alleria/EU), lanscestre (Sulfuron/FR)
-## URL: 
-## Version: 1.102
-localization.lua
+## X-URL:
+## Version: 1.103
+
 MotherDirection.xml
-MotherDirection.lua

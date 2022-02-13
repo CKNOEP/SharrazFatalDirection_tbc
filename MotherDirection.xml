@@ -1,6 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
 	<Script file="localization.lua"/>
-	<Script file="MotherDirection.lua"/> 
+	<Script file="MotherDirection.lua"/>
 	
    <!-- Frame to handle all core events --> 
 	<Frame name="MotherDirectionHoverFrame" toplevel="true" frameStrata="HIGH" hidden="true" parent="UIParent" enableMouse="false" movable="true">
@@ -22,22 +22,22 @@
 			<Anchor point="CENTER" relativeTo="$parent" relativePoint="CENTER"/>
 		</Anchors>
 		<Layers>
-			<Layer level="FOREGROUND">
-				<FontString name="MotherDirectionTitleText" text="MotherDirection" inherits="GameFontGreen" nonspacewrap="true" justifyH="CENTER" enableMouse="false">
+			<Layer level="ARTWORK">
+				<FontString name="MotherDirectionTitleText" text="MotherDirection" inherits="GameFontGreen" nonspacewrap="true" justifyH="CENTER">
 					<Anchors>
 						<Anchor point="TOP" relativePoint="TOP" relativeTo="$parent">
 							<Offset><AbsDimension x="0" y="-10"/></Offset>
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="MotherDirectionTextOriention" text="Demo" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER" enableMouse="false">
+				<FontString name="MotherDirectionTextOriention" text="Demo" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER">
 					<Anchors>
 						<Anchor point="TOP" relativePoint="TOP" relativeTo="$parent">
 							<Offset><AbsDimension x="0" y="-30"/></Offset>
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="MotherDirectionTextOrientationDecription" text="(Demo Decription)" inherits="GameFontRed" nonspacewrap="true" justifyH="CENTER" enableMouse="false">
+				<FontString name="MotherDirectionTextOrientationDecription" text="(Demo Decription)" inherits="GameFontRed" nonspacewrap="true" justifyH="CENTER">
 					<Anchors>
 						<Anchor point="TOP" relativePoint="TOP" relativeTo="$parent">
 							<Offset><AbsDimension x="0" y="-50"/></Offset>
@@ -120,13 +120,13 @@
 		</Layers>
 		<Scripts> 
 			<OnLoad>	
-				md_OnLoad(self);
+				_G["SharrazFatalDirection_tbc"].OnLoad(self);
 			</OnLoad>
 			<OnEvent>	  
-				md_OnEvent(event);
+				_G["SharrazFatalDirection_tbc"].OnEvent(self, event, ...);
 			</OnEvent>
 			<OnUpdate>
-				md_3DArrow_OnUpdate(self);
+				_G["SharrazFatalDirection_tbc"].Arrow_OnUpdate(self, elapsed);
 			</OnUpdate>
 			<OnMouseUp>
 				if ( self.isMoving ) then
@@ -177,29 +177,29 @@
 			<Anchor point="CENTER" relativeTo="$parent" relativePoint="CENTER"/>
 		</Anchors>
 		<Layers>
-			<Layer level="FOREGROUND">
-				<FontString name="MotherDirectionTextCompassNorth" text="North" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER" enableMouse="false">
+			<Layer level="ARTWORK">
+				<FontString name="MotherDirectionTextCompassNorth" text="North" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER">
 					<Anchors>
 						<Anchor point="TOP" relativePoint="TOP" relativeTo="$parent">
 							<Offset><AbsDimension x="0" y="-10"/></Offset>
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="MotherDirectionTextCompassEast" text=" East" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER" enableMouse="false">
+				<FontString name="MotherDirectionTextCompassEast" text=" East" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER">
 					<Anchors>
 						<Anchor point="CENTER" relativePoint="CENTER" relativeTo="$parent">
 							<Offset><AbsDimension x="95" y="0"/></Offset>
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="MotherDirectionTextCompassSouth" text="South" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER" enableMouse="false">
+				<FontString name="MotherDirectionTextCompassSouth" text="South" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER">
 					<Anchors>
 						<Anchor point="BOTTOM" relativePoint="BOTTOM" relativeTo="$parent">
 							<Offset><AbsDimension x="0" y="10"/></Offset>
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="MotherDirectionTextCompassWest" text="West" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER" enableMouse="false">
+				<FontString name="MotherDirectionTextCompassWest" text="West" inherits="GameFontRedLarge" nonspacewrap="true" justifyH="CENTER">
 					<Anchors>
 						<Anchor point="CENTER" relativePoint="CENTER" relativeTo="$parent">
 							<Offset><AbsDimension x="-95" y="0"/></Offset>
@@ -209,7 +209,7 @@
 			</Layer>
 		</Layers>
 			<Layers>
-				<Layer level="FOREGROUND">
+				<Layer level="ARTWORK">
 					<Texture name="MotherDirectionCompassArrow" file="Interface\AddOns\SharrazFatalDirection_tbc\icons\arrow_dynamic">
 						<Size>
 							<AbsDimension x="100" y="100"/>
@@ -226,10 +226,10 @@
 			</Layers>
 		<Scripts> 
 			<OnEvent>	  
-				md_OnEvent();
+				_G["SharrazFatalDirection_tbc"].OnEvent(self, event, ...);
 			</OnEvent>
 			<OnUpdate>
-				md_CompassArrow_OnUpdate();
+				_G["SharrazFatalDirection_tbc"].CompassArrow_OnUpdate(self, elapsed);
 			</OnUpdate>
 			<OnMouseUp>
 				if ( self.isMoving ) then
@@ -238,9 +238,7 @@
 				end
 			</OnMouseUp>
 			<OnMouseDown>
-				
 				if ( ( ( not self.isLocked ) or ( self.isLocked == 0 ) ) and ( button == "LeftButton" ) ) then
-					print("moving")
 					self:StartMoving();
 					self.isMoving = true;
 				end
