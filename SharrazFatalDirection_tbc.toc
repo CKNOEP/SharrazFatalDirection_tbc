@@ -1,4 +1,4 @@
-## Interface: 20503
+## Interface: 20504
 ## Title: Sharraz Fatal Attraction Direction tbc [/md]
 ## Notes: Displays in what direction you have to move at Mother Shahraz
 ## SavedVariables: MotherDirectionSaved
