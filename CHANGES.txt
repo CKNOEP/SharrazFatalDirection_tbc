@@ -1,0 +1,10 @@
+lightweight tag 8cce09dfd97d157d23d29c50893c1437722a45e9 2.5.4.1
+Author:	GitHub <noreply@github.com>
+Date:	Sun Jul 24 08:00:46 2022 +0200
+
+commit 8cce09dfd97d157d23d29c50893c1437722a45e9
+Author: lancetre <c.knoepffler@free.fr>
+Date:   Sun Jul 24 08:00:46 2022 +0200
+
+    Update SharrazFatalDirection_tbc.toc
+

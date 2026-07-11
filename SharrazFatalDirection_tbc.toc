@@ -1,0 +1,12 @@
+## Interface: 20506
+## Title: Sharraz Fatal Attraction Direction TBC [/md]
+## Notes: Displays directional guidance for Mother Shahraz's Fatal Attraction mechanic
+## SavedVariables: MotherDirectionSaved
+## X-CompatibleLocales: enUS, deDE, frFR, enGB
+## Author: Logmana (Alleria/EU), lanscestre (Sulfuron/FR)
+## Version: 2.5.6.1
+## X-Category: Raid
+
+localization.lua
+MotherDirection.lua
+MotherDirection.xml
